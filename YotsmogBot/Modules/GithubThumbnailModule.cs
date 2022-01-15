@@ -1,12 +1,7 @@
 ﻿using System.Xml;
 using Flurl.Http;
 using HtmlAgilityPack;
-using Mirai.Net.Data.Messages;
 using Mirai.Net.Data.Messages.Concretes;
-using Mirai.Net.Data.Messages.Receivers;
-using Mirai.Net.Modules;
-using Mirai.Net.Utils.Scaffolds;
-using YotsmogBot.Utils;
 
 namespace YotsmogBot.Modules;
 
@@ -18,7 +13,7 @@ public class GithubThumbnailModule : IModule
         {
             var receiver = @base.Concretize<GroupMessageReceiver>();
             var url = string.Empty;
-            
+
             if (receiver.MessageChain.OfType<XmlMessage>().Any())
             {
                 var xmlStr = receiver.MessageChain.OfType<XmlMessage>().First().Xml;
