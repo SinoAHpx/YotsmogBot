@@ -1,4 +1,5 @@
 ﻿using System.Xml;
+using AHpx.Extensions.StringExtensions;
 using Flurl.Http;
 using HtmlAgilityPack;
 using Mirai.Net.Data.Messages.Concretes;
@@ -28,6 +29,9 @@ public class GithubThumbnailModule : IModule
                 url = receiver.MessageChain.GetPlainMessage().Trim();
             }
 
+            if (!url.IsNotNullOrEmpty()) 
+                return;
+            
             var response = await url.GetStringAsync();
             var doc = new HtmlDocument();
             doc.LoadHtml(response);
