@@ -11,4 +11,19 @@
       <PackageReference Include="Mirai.Net" Version="2.4.0-Pre1" />
     </ItemGroup>
 
+    <ItemGroup>
+      <EmbeddedResource Update="ConstantText.resx">
+        <Generator>ResXFileCodeGenerator</Generator>
+        <LastGenOutput>ConstantText.Designer.cs</LastGenOutput>
+      </EmbeddedResource>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Update="ConstantText.Designer.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>ConstantText.resx</DependentUpon>
+      </Compile>
+    </ItemGroup>
+
 </Project>

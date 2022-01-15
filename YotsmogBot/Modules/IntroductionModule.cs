@@ -2,6 +2,8 @@
 using Mirai.Net.Data.Messages.Receivers;
 using Mirai.Net.Modules;
 using Mirai.Net.Utils.Scaffolds;
+using YotsmogBot.Utils;
+using YotsmogBot.Utils.Extensions;
 
 namespace YotsmogBot.Modules;
 
@@ -9,13 +11,20 @@ public class IntroductionModule : IModule
 {
     public async void Execute(MessageReceiverBase @base)
     {
-        var receiver = @base.Concretize<GroupMessageReceiver>();
-
-        var alias = new[] { "/intro", "/help", "帮助" };
-        if (alias.Any(x => receiver.MessageChain.GetPlainMessage().Contains(x)))
+        try
         {
-            await receiver.SendMessageAsync("这里是幽小梦山东大奶奶机器人!");
+            var receiver = @base.Concretize<GroupMessageReceiver>();
+
+            if (receiver.MessageChain.ContainsCommand(new[] { "/intro", "/help", "帮助" }))
+            {
+                await receiver.SendMessageAsync("这里是幽小梦山东大奶奶机器人!");
+            }
         }
+        catch (Exception e)
+        {
+            new Logger().Log(e);
+        }
+        
     }
 
     public bool? IsEnable { get; set; }

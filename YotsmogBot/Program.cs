@@ -7,6 +7,7 @@ using Mirai.Net.Data.Messages.Receivers;
 using Mirai.Net.Sessions;
 using Mirai.Net.Sessions.Http.Managers;
 using Mirai.Net.Utils.Scaffolds;
+using YotsmogBot;
 using YotsmogBot.Modules;
 using YotsmogBot.Utils;
 
