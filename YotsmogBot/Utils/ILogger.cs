@@ -19,11 +19,11 @@ public class Logger : ILogger
     
     public void Log(string message, Exception exception)
     {
-        Console.WriteLine($"{DateTime.Now:T} - exception \"{exception.Message}\" occured: {message}");
+        Console.WriteLine($"{DateTime.Now:T} - Exception \"{exception.Message}\" occured from {exception.StackTrace}: {message} ");
     }
 
     public void Log(Exception exception)
     {
-        Console.WriteLine($"{DateTime.Now:T} - exception \"{exception.Message}\" occured");
+        Console.WriteLine($"{DateTime.Now:T} - Exception \"{exception.Message}\" occured from {exception.StackTrace}");
     }
 }
