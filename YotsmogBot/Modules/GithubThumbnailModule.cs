@@ -24,12 +24,12 @@ public class GithubThumbnailModule : IModule
                 var node = xmlDoc.SelectSingleNode("msg[url~=github]");
                 url = node?.Attributes?["url"]?.Value;
             }
-            else if (receiver.MessageChain.GetPlainMessage().Contains("github.com"))
+            if (receiver.MessageChain.GetPlainMessage()?.Contains("github.com") is true)
             {
                 url = receiver.MessageChain.GetPlainMessage().Trim();
             }
 
-            if (!url.IsNotNullOrEmpty()) 
+            if (url == string.Empty) 
                 return;
             
             var response = await url.GetStringAsync();
