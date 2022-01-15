@@ -2,7 +2,9 @@
 //The display name of this project is the abbreviation and variety of Yoo tiny mo sand east grand grand mother bot
 
 using System.Reactive.Linq;
+using AHpx.Extensions.StringExtensions;
 using Mirai.Net.Data.Events.Concretes.Group;
+using Mirai.Net.Data.Events.Concretes.Message;
 using Mirai.Net.Data.Messages.Receivers;
 using Mirai.Net.Sessions;
 using Mirai.Net.Sessions.Http.Managers;
@@ -40,6 +42,13 @@ bot.EventReceived
         {
             new Logger().Log(exception);
         }
+    });
+
+bot.EventReceived
+    .OfType<AtEvent>()
+    .Subscribe(async e =>
+    {
+        await e.Receiver.SendMessageAsync("你好!");
     });
 
 while (Console.ReadLine() != "exit") { }

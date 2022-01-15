@@ -8,6 +8,8 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="Flurl.Http" Version="3.2.0" />
+      <PackageReference Include="HtmlAgilityPack" Version="1.11.40" />
       <PackageReference Include="Mirai.Net" Version="2.4.0-Pre1" />
     </ItemGroup>
 
