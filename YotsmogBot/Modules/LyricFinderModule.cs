@@ -5,13 +5,12 @@ using Flurl;
 using Flurl.Http;
 using Mirai.Net.Data.Commands;
 using YotsmogBot.Data;
-using YotsmogBot.Utils.Extensions;
 
 namespace YotsmogBot.Modules;
 
 public class LyricFinderModule : IModule
 {
-    private const string ApiKey = "c87eb40be6794cc3fe8f27c7eb7be1c8";
+    private static readonly string? ApiKey = ConfigUtils.GetApiKeyAsync("musixmatch").GetAwaiter().GetResult();
     
     public async void Execute(MessageReceiverBase @base)
     {

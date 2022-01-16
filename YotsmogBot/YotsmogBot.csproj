@@ -30,8 +30,4 @@
       </Compile>
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Data\Command" />
-    </ItemGroup>
-
 </Project>

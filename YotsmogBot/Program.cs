@@ -1,6 +1,8 @@
 ﻿//First of fucking all, the formal name of this project is 幽小梦山东大奶奶机器人
 //The display name of this project is the abbreviation and variety of Yoo tiny mo sand east grand grand mother bot
 
+//TODO: this project will be a template
+
 using System.ComponentModel;
 using System.Reactive.Linq;
 using System.Reflection;
