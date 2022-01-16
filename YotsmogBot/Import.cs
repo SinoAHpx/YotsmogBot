@@ -6,3 +6,5 @@ global using Mirai.Net.Utils.Scaffolds;
 global using YotsmogBot.Utils.Extensions;
 
 global using Spectre.Console;
+
+global using System.Diagnostics;

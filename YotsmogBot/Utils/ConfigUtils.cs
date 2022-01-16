@@ -1,4 +1,6 @@
-﻿using AHpx.Extensions.IOExtensions;
+﻿using System.Diagnostics;
+using System.Security.Cryptography.X509Certificates;
+using AHpx.Extensions.IOExtensions;
 using Newtonsoft.Json;
 using YotsmogBot.Data.Config;
 
@@ -6,6 +8,8 @@ namespace YotsmogBot.Utils;
 
 public class ConfigUtils
 {
+    private static ILogger _logger = new Logger();
+    
     private static FileInfo ConfigFile
     {
         get
@@ -27,7 +31,7 @@ public class ConfigUtils
         }
         catch (Exception e)
         {
-            new Logger().Log(e);
+            _logger.Log(e);
             return null;
         }
         
@@ -39,12 +43,57 @@ public class ConfigUtils
         {
             var jsonText = JsonConvert.SerializeObject(config);
 
-            new Logger().Log($"[green]{jsonText}[/] has been save to [green]{ConfigFile.FullName}[/]");
+            _logger.Log($"[green]{jsonText.EscapeMarkup()}[/] has been save to [green]{ConfigFile.FullName}[/]");
             await ConfigFile.WriteAllTextAsync(jsonText);
         }
         catch (Exception e)
         {
-            new Logger().Log(e);
+            _logger.Log(e);
+        }
+    }
+
+    public static async Task<string?> GetApiKeyAsync(string name)
+    {
+        try
+        {
+            var config = await GetConfigAsync();
+            if (config!.ApiKeys.Any(s => s.Name == name))
+                return config.ApiKeys.First(s => s.Name == name).Key;
+            
+            _logger.Log($"[red]No ApiKey[/] found with name [green]{name}[/]");
+        }
+        catch (Exception e)
+        {
+            _logger.Log(e);
+        }
+
+        return null;
+    }
+
+    public static async Task AddApiKeyAsync(string name, string key)
+    {
+        try
+        {
+            var config = await GetConfigAsync();
+            if (config!.ApiKeys.Any(s => s.Name == name))
+            {
+                _logger.Log($"Api key with name [green]{name}[/] already exists");
+                return;
+            }
+
+            config.ApiKeys.Add(new Config.ApiKey
+            {
+                Key = key,
+                Name = name
+            });
+            
+            await SaveConfigAsync(config);
+
+            _logger.Log($"Api key [green]{name}[/] has been added");
+        }
+        catch (Exception e)
+        {
+            _logger.Log(e);
         }
     }
 }

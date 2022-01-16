@@ -13,7 +13,7 @@ public class Logger : ILogger
 {
     public void Log(string message)
     {
-        AnsiConsole.MarkupLine($@"[green]{DateTime.Now:s}[/] - {message}");
+        AnsiConsole.MarkupLine($@"[red]{DateTime.Now:s}[/] - {message}");
     }
 
     public void Log(Exception exception)
