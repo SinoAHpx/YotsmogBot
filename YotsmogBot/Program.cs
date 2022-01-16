@@ -56,6 +56,9 @@ class Program
                 case "/help":
                     Help();
                     break;
+                case "/removekey":
+                    await RemoveKeyAsync();
+                    break;
                 default:
                     AnsiConsole.MarkupLine($"Unknown command: [red]{command}[/]! Use [green]/help[/] to see the list of commands.");
                     break;
@@ -137,7 +140,9 @@ class Program
 
             if (config!.ApiKeys.Any())
                 AnsiConsole.MarkupLine(
-                    $"[green]{config.ApiKeys.Select(x => $"{x.Name}-{x.Key}").Aggregate((a, b) => $"{a}{Environment.NewLine}{b}")}[/]");
+                    $"{config.ApiKeys.Select(x => $"[green]{x.Name}[/]-{x.Key}").Aggregate((a, b) => $"{a}{Environment.NewLine}{b}")}");
+            else
+                AnsiConsole.MarkupLine("No keys found.");
         }
         catch (Exception e)
         {
@@ -156,6 +161,20 @@ class Program
             .Aggregate((a, b) => $"{a}{Environment.NewLine}{b}");
 
         AnsiConsole.MarkupLine(promptText);
+    }
+
+    [Description("Remove an unwanted key")]
+    public static async Task RemoveKeyAsync()
+    {
+        await ListKeysAsync();
+
+        var config = await ConfigUtils.GetConfigAsync();
+        if (config!.ApiKeys.Any())
+        {
+            var name = AnsiConsole.Ask<string>("Name of the [green]key[/] for removing: ");
+
+            await ConfigUtils.RemoveKeyAsync(name);
+        }
     }
 
     #endregion

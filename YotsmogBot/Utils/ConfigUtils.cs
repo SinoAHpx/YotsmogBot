@@ -43,7 +43,7 @@ public class ConfigUtils
         {
             var jsonText = JsonConvert.SerializeObject(config);
 
-            _logger.Log($"[green]{jsonText.EscapeMarkup()}[/] has been save to [green]{ConfigFile.FullName}[/]");
+            _logger.Log($"[green]Config[/] has been save to [green]{ConfigFile.FullName}[/]");
             await ConfigFile.WriteAllTextAsync(jsonText);
         }
         catch (Exception e)
@@ -90,6 +90,34 @@ public class ConfigUtils
             await SaveConfigAsync(config);
 
             _logger.Log($"Api key [green]{name}[/] has been added");
+        }
+        catch (Exception e)
+        {
+            _logger.Log(e);
+        }
+    }
+
+    public static async Task RemoveKeyAsync(string name)
+    {
+        try
+        {
+            var config = await GetConfigAsync();
+            if (!config!.ApiKeys.Any())
+            {
+                _logger.Log("No api Key found");
+                return;
+            }
+            if (config!.ApiKeys.All(s => s.Name != name))
+            {
+                _logger.Log($"Api key with name [green]{name}[/] is not exists");
+                return;
+            }
+
+            config.ApiKeys.RemoveAll(x => x.Name == name);
+
+            await SaveConfigAsync(config);   
+            
+            _logger.Log($"Api key [green]{name}[/] has been removed");
         }
         catch (Exception e)
         {
