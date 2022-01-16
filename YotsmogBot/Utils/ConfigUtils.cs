@@ -20,14 +20,31 @@ public class ConfigUtils
 
     public static async Task<Config?> GetConfigAsync()
     {
-        var jsonText = await ConfigFile.ReadAllTextAsync();
+        try
+        {
+            var jsonText = await ConfigFile.ReadAllTextAsync();
+            return JsonConvert.DeserializeObject<Config>(jsonText);
+        }
+        catch (Exception e)
+        {
+            new Logger().Log(e);
+            return null;
+        }
         
-        return JsonConvert.DeserializeObject<Config>(jsonText);
     }
     
     public static async Task SaveConfigAsync(Config config)
     {
-        var jsonText = JsonConvert.SerializeObject(config);
-        await ConfigFile.WriteAllTextAsync(jsonText);
+        try
+        {
+            var jsonText = JsonConvert.SerializeObject(config);
+
+            new Logger().Log($"[green]{jsonText}[/] has been save to [green]{ConfigFile.FullName}[/]");
+            await ConfigFile.WriteAllTextAsync(jsonText);
+        }
+        catch (Exception e)
+        {
+            new Logger().Log(e);
+        }
     }
 }

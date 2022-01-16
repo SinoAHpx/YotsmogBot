@@ -7,7 +7,7 @@ using Mirai.Net.Data.Events.Concretes.Message;
 using Mirai.Net.Data.Messages.Concretes;
 using Mirai.Net.Sessions;
 using Mirai.Net.Sessions.Http.Managers;
-using YotsmogBot;
+using YotsmogBot.Data.Config;
 using YotsmogBot.Modules;
 
 var bot = new MiraiBot();
@@ -27,11 +27,16 @@ while (true)
         case "/initialize":
             await InitializeAsync();
             break;
+        case "/launch":
+            await LaunchAsync();
+            break;
         default:
             AnsiConsole.MarkupLine($"Unknown command: [red]{command}[/]!");
             break;
     }
 }
+
+#region Commands
 
 async Task InitializeAsync()
 {
@@ -45,12 +50,33 @@ async Task InitializeAsync()
             await LaunchBotAsync();
         else
             AnsiConsole.MarkupLine("You can run bot manually by using [green]/launch[/] command.");
+        
+        await ConfigUtils.SaveConfigAsync(new Config()
+        {
+            MiraiBot = bot
+        });
     }
     catch (Exception e)
     {
         new Logger().Log(e);
     }
 }
+
+async Task LaunchAsync()
+{
+    var config = await ConfigUtils.GetConfigAsync();
+
+    if (config is null)
+        AnsiConsole.MarkupLine("Please [green]/initialize first![/]");
+    else
+        bot = config.MiraiBot;
+
+    await LaunchBotAsync();
+}
+
+#endregion
+
+#region Helpers
 
 string ConfigureBot(string name, string defaultValue)
 {
@@ -151,3 +177,6 @@ async Task LaunchBotAsync()
                 .Append("进群!"));
         });
 }
+
+#endregion
+

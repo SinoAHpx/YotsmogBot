@@ -10,7 +10,7 @@
     <ItemGroup>
       <PackageReference Include="Flurl.Http" Version="3.2.0" />
       <PackageReference Include="HtmlAgilityPack" Version="1.11.40" />
-      <PackageReference Include="Mirai.Net" Version="2.4.0-Pre1" />
+      <PackageReference Include="Mirai.Net" Version="2.4.0-Pre2" />
       <PackageReference Include="Spectre.Console" Version="0.43.1-preview.0.19" />
       <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
     </ItemGroup>
