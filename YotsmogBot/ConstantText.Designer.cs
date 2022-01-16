@@ -74,5 +74,19 @@ namespace YotsmogBot {
                 return ResourceManager.GetString("SovietJoke", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to           _                             
+        ////\_/\___ | |_ ___ _ __ ___   ___   __ _ 
+        ///\_ _/ _ \| __/ __| &apos;_ ` _ \ / _ \ / _` |
+        /// / \ (_) | |_\__ \ | | | | | (_) | (_| |
+        /// \_/\___/ \__|___/_| |_| |_|\___/ \__, |
+        ///                                  |___/ .
+        /// </summary>
+        internal static string WelcomeArt {
+            get {
+                return ResourceManager.GetString("WelcomeArt", resourceCulture);
+            }
+        }
     }
 }
