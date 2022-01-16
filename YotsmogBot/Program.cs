@@ -231,19 +231,14 @@ class Program
             .Subscribe(async r =>
             {
                 try
-                {
+                {                    
                     var config = await ConfigUtils.GetConfigAsync();
-                    
-                    foreach (var entry in config.Blacklist)
-                    {
-                        //group not included in blacklist
-                        if (entry.Type && r.Id != entry.Id)
-                            modules.SubscribeModule(r);
 
-                        //person not included in blacklist
-                        if (!entry.Type && r.Sender.Id != entry.Id)
-                            modules.SubscribeModule(r);
-                    }
+                    if (config.Blacklist.Where(x => x.Type).Select(x => x.Id).Contains(r.Id) ||
+                        config.Blacklist.Where(x => !x.Type).Select(x => x.Id).Contains(r.Sender.Id))
+                        return;
+                    
+                    modules.SubscribeModule(r);
                 }
                 catch (Exception e)
                 {
