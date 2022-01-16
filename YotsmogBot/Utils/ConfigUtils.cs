@@ -144,4 +144,26 @@ public class ConfigUtils
             _logger.Log(e);
         }
     }
+    
+    public static async Task RemoveBlackListAsync(string id)
+    {
+        try
+        {
+            var config = await GetConfigAsync();
+            
+            if (config!.Blacklist.Any(x => x.Id == id))
+            {
+                config!.Blacklist.RemoveAll(x => x.Id == id);
+
+                await SaveConfigAsync(config);
+                _logger.Log($"Blacklist [green]{id}[/] has been unblocked");
+            }
+            else
+                _logger.Log("No blacklist found");
+        }
+        catch (Exception e)
+        {
+            _logger.Log(e);
+        }
+    }
 }

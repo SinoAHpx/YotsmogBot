@@ -36,7 +36,14 @@ class Program
         {
             var command = AnsiConsole.Ask<string>("[red]YotsmogBot[/]> ");
 
-            await ExecuteCommandHandlerAsync(command);
+            try
+            {
+                await ExecuteCommandHandlerAsync(command);
+            }
+            catch (Exception e)
+            {
+                new Logger().Log(e);
+            }
         }
     }
     
@@ -52,26 +59,19 @@ class Program
     [Description("Initialize the bot")]
     public static async Task InitializeAsync()
     {
-        try
-        {
-            bot.Address = ConfigureBot("Address", "localhost:8080");
-            bot.VerifyKey = ConfigureBot("VerifyKey", "1145141919810");
-            bot.QQ = ConfigureBot("QQ", "2672886221");
+        bot.Address = ConfigureBot("Address", "localhost:8080");
+        bot.VerifyKey = ConfigureBot("VerifyKey", "1145141919810");
+        bot.QQ = ConfigureBot("QQ", "2672886221");
 
-            if (AnsiConsole.Confirm("Run bot?"))
-                await LaunchBotAsync();
-            else
-                AnsiConsole.MarkupLine("You can run bot manually by using [green]/launch[/] command.");
+        if (AnsiConsole.Confirm("Run bot?"))
+            await LaunchBotAsync();
+        else
+            AnsiConsole.MarkupLine("You can run bot manually by using [green]/launch[/] command.");
 
-            await ConfigUtils.SaveConfigAsync(new Config()
-            {
-                MiraiBot = bot
-            });
-        }
-        catch (Exception e)
+        await ConfigUtils.SaveConfigAsync(new Config()
         {
-            new Logger().Log(e);
-        }
+            MiraiBot = bot
+        });
     }
 
     [Description("Launch the bot")]
@@ -90,17 +90,10 @@ class Program
     [Description("Add a key")]
     public static async Task AddKeyAsync()
     {
-        try
-        {
-            var name = AnsiConsole.Prompt(new TextPrompt<string>("Name of the [green]key[/]: "));
-            var key = AnsiConsole.Prompt(new TextPrompt<string>("[green]Key[/]: ").Secret());
+        var name = AnsiConsole.Prompt(new TextPrompt<string>("Name of the [green]key[/]: "));
+        var key = AnsiConsole.Prompt(new TextPrompt<string>("[green]Key[/]: ").Secret());
 
-            await ConfigUtils.AddApiKeyAsync(name, key);
-        }
-        catch (Exception e)
-        {
-            new Logger().Log(e);
-        }
+        await ConfigUtils.AddApiKeyAsync(name, key);
     }
 
     [Description("Show config")]
@@ -114,20 +107,13 @@ class Program
     [Description("List keys")]
     public static async Task ListKeysAsync()
     {
-        try
-        {
-            var config = await ConfigUtils.GetConfigAsync();
+        var config = await ConfigUtils.GetConfigAsync();
 
-            if (config!.ApiKeys.Any())
-                AnsiConsole.MarkupLine(
-                    $"{config.ApiKeys.Select(x => $"[green]{x.Name}[/]-{x.Key}").Aggregate((a, b) => $"{a}{Environment.NewLine}{b}")}");
-            else
-                AnsiConsole.MarkupLine("No keys found.");
-        }
-        catch (Exception e)
-        {
-            new Logger().Log(e);
-        }
+        if (config!.ApiKeys.Any())
+            AnsiConsole.MarkupLine(
+                $"{config.ApiKeys.Select(x => $"[green]{x.Name}[/]-{x.Key}").Aggregate((a, b) => $"{a}{Environment.NewLine}{b}")}");
+        else
+            AnsiConsole.MarkupLine("No keys found.");
     }
 
     [Description("Show help")]
@@ -169,6 +155,33 @@ class Program
         var id = AnsiConsole.Ask<long>("Which [green]group[/] do you want to block? ");
 
         await ConfigUtils.AddBlackListAsync(id.ToString(), true);
+    }
+
+    [Description("Show blocked entries")]
+    public static async Task ShowBlackListAsync()
+    {
+        var config = await ConfigUtils.GetConfigAsync();
+
+        if (config!.Blacklist.Any())
+            config!.Blacklist
+                .Select(x => $"[green]{x.Id}[/] - {(x.Type ? "Group" : "User")}")
+                .ToList()
+                .ForEach(AnsiConsole.MarkupLine);
+        else
+            AnsiConsole.MarkupLine("No blocked entries found.");
+    }
+    
+    [Description("Unblock from blacklist")]
+    public static async Task UnblockAsync()
+    {
+        await ShowBlackListAsync();
+        var config = await ConfigUtils.GetConfigAsync();
+
+        if (config!.Blacklist.Any())
+        {
+            var id = AnsiConsole.Ask<long>("Which [green]user[/] or [green]group[/] do you want to unblock? ");
+            await ConfigUtils.RemoveBlackListAsync(id.ToString());
+        }
     }
     
     #endregion
@@ -215,7 +228,28 @@ class Program
         var modules = new IntroductionModule().GetModules();
         bot.MessageReceived
             .OfType<GroupMessageReceiver>()
-            .Subscribe(r => { modules.SubscribeModule(r); });
+            .Subscribe(async r =>
+            {
+                try
+                {
+                    var config = await ConfigUtils.GetConfigAsync();
+                    
+                    foreach (var entry in config.Blacklist)
+                    {
+                        //group not included in blacklist
+                        if (entry.Type && r.Id != entry.Id)
+                            modules.SubscribeModule(r);
+
+                        //person not included in blacklist
+                        if (!entry.Type && r.Sender.Id != entry.Id)
+                            modules.SubscribeModule(r);
+                    }
+                }
+                catch (Exception e)
+                {
+                    new Logger().Log(e);
+                }
+            });
 
         //message output
         bot?.MessageReceived
