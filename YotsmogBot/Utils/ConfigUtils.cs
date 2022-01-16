@@ -124,4 +124,24 @@ public class ConfigUtils
             _logger.Log(e);
         }
     }
+
+    public static async Task AddBlackListAsync(string id, bool type)
+    {
+        try
+        {
+            var config = await GetConfigAsync();
+            config!.Blacklist.Add(new Config.BlackListEntry
+            {
+                Id = id,
+                Type = type
+            });
+            
+            await SaveConfigAsync(config);
+            _logger.Log($"Blacklist {(type ? "group" : "user")} [green]{id}[/] has been added");
+        }
+        catch (Exception e)
+        {
+            _logger.Log(e);
+        }
+    }
 }

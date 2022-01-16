@@ -34,41 +34,19 @@ class Program
         {
             var command = AnsiConsole.Ask<string>("[red]YotsmogBot[/]> ");
 
-            switch (command.ToLower())
-            {
-                case "/exit":
-                    return;
-                case "/initialize":
-                    await InitializeAsync();
-                    break;
-                case "/launch":
-                    await LaunchAsync();
-                    break;
-                case "/addkey":
-                    await AddKeyAsync();
-                    break;
-                case "/showconfig":
-                    await ShowConfigAsync();
-                    break;
-                case "/listkeys":
-                    await ListKeysAsync();
-                    break;
-                case "/help":
-                    Help();
-                    break;
-                case "/removekey":
-                    await RemoveKeyAsync();
-                    break;
-                default:
-                    AnsiConsole.MarkupLine($"Unknown command: [red]{command}[/]! Use [green]/help[/] to see the list of commands.");
-                    break;
-            }
+            await ExecuteCommandHandlerAsync(command);
         }
     }
     
     
     #region Commands
 
+    [Description("Exit the bot")]
+    public static void Exit()
+    {
+        Environment.Exit(0);
+    }
+    
     [Description("Initialize the bot")]
     public static async Task InitializeAsync()
     {
@@ -153,9 +131,7 @@ class Program
     [Description("Show help")]
     public static void Help()
     {
-        var promptText = typeof(Program)
-            .GetMethods()
-            .Where(x => x.IsPublic && x.GetCustomAttribute<DescriptionAttribute>() != null)
+        var promptText = GetCommandHandlers()
             .Select(x =>
                 $"[green]/{x.Name.ToLower().Empty("async")}[/] - {x.GetCustomAttribute<DescriptionAttribute>()?.Description}")
             .Aggregate((a, b) => $"{a}{Environment.NewLine}{b}");
@@ -177,6 +153,22 @@ class Program
         }
     }
 
+    [Description("Block an user")]
+    public static async Task BlockUserAsync()
+    {
+        var id = AnsiConsole.Ask<long>("Which [green]user[/] do you want to block? ");
+
+        await ConfigUtils.AddBlackListAsync(id.ToString(), false);
+    }
+    
+    [Description("Block a group")]
+    public static async Task BlockGroupAsync()
+    {
+        var id = AnsiConsole.Ask<long>("Which [green]group[/] do you want to block? ");
+
+        await ConfigUtils.AddBlackListAsync(id.ToString(), true);
+    }
+    
     #endregion
 
     #region Helpers
@@ -270,6 +262,31 @@ class Program
                     .Append(new AtMessage(e.Member.Id))
                     .Append("进群!"));
             });
+    }
+
+    private static IEnumerable<MethodInfo> GetCommandHandlers()
+    {
+        return typeof(Program)
+            .GetMethods()
+            .Where(x => x.IsPublic && x.GetCustomAttribute<DescriptionAttribute>() != null);
+    }
+
+    private static async Task ExecuteCommandHandlerAsync(string command)
+    {
+        foreach (var methodInfo in GetCommandHandlers())
+        {
+            if (methodInfo.Name.ToLower().Empty("async") == command.Trim().TrimStart('/'))
+            {
+                if (methodInfo.Name.Contains("Async"))
+                    await (Task)methodInfo.Invoke(null, null)!;
+                else
+                    methodInfo.Invoke(null, null);
+                
+                return;
+            }
+        }
+        
+        AnsiConsole.MarkupLine($"Unknown command: [red]{command}[/]! Use [green]/help[/] to see the list of commands.");
     }
 
     #endregion
