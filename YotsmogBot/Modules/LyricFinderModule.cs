@@ -10,7 +10,7 @@ namespace YotsmogBot.Modules;
 
 public class LyricFinderModule : IModule
 {
-    private static readonly string? ApiKey = ConfigUtils.GetApiKeyAsync("musixmatch").GetAwaiter().GetResult();
+    private readonly string? ApiKey = ConfigUtils.GetApiKeyAsync("musixmatch").GetAwaiter().GetResult();
     
     public async void Execute(MessageReceiverBase @base)
     {
@@ -38,16 +38,16 @@ public class LyricFinderModule : IModule
     [CommandEntity(Name = "lyric")]
     class LyricInfo
     {
-        [CommandArgument(Name = "artist")]
+        [CommandArgument(Name = "artist", IsRequired = true)]
         public string ArtistName { get; set; }
 
-        [CommandArgument(Name = "track")]
+        [CommandArgument(Name = "track", IsRequired = true)]
         public string TrackName { get; set; }
     }
     
     #region Music services
 
-    private static async Task<ArtistInfo> GetArtistInfoAsync(string artistName)
+    private async Task<ArtistInfo> GetArtistInfoAsync(string artistName)
     {
         var response = await $"https://api.musixmatch.com/ws/1.1"
             .AppendPathSegment("artist.search")
@@ -70,7 +70,7 @@ public class LyricFinderModule : IModule
         };
     }
 
-    private static async Task<TrackInfo> GetTrackAsync(string trackName, string artistName)
+    private async Task<TrackInfo> GetTrackAsync(string trackName, string artistName)
     {
         var artist = await GetArtistInfoAsync(artistName);
 
@@ -98,34 +98,48 @@ public class LyricFinderModule : IModule
     
     private async Task<string> GetLyricAsync(string trackName, string artistName)
     {
-        var response = await "http://api.chartlyrics.com/apiv1.asmx"
-            .AppendPathSegment("SearchLyricDirect")
-            .SetQueryParam("artist", artistName)
-            .SetQueryParam("song", trackName)
-            .GetStringAsync();
-
-        var xml = XDocument.Load(new StringReader(response));
-
-        var re = xml.DescendantNodes()
-            .OfType<XElement>()
-            .First(x => x.Name.LocalName == "Lyric")
-            .Value;
-
-        if (re.IsNullOrEmpty())
+        try
         {
-            var track = await GetTrackAsync(trackName, artistName);
-
-            var response1 = await $"https://api.musixmatch.com/ws/1.1"
-                .AppendPathSegment("track.lyrics.get")
-                .SetQueryParam("apikey", ApiKey)
-                .SetQueryParam("format", "json")
-                .SetQueryParam("track_id", track.Id)
+            var response = await "http://api.chartlyrics.com/apiv1.asmx"
+                .AppendPathSegment("SearchLyricDirect")
+                .SetQueryParam("artist", artistName)
+                .SetQueryParam("song", trackName)
                 .GetStringAsync();
 
-            return $"{response1.Fetch("message.body.lyrics.lyrics_body")}\r\n只有30%的歌词。\r\nhttps://api.musixmatch.com";
+            var xml = XDocument.Load(new StringReader(response));
+
+            var nodes = xml.DescendantNodes()
+                .OfType<XElement>();
+
+            if (nodes.Any(x => x.Name.LocalName == "Lyric" && x.Value.IsNotNullOrEmpty()))
+            {
+                var re = nodes.First(x => x.Name.LocalName == "Lyric")
+                    .Value;
+
+                return $"{re}\r\nhttp://www.chartlyrics.com/api.aspx";
+            }
+
+            return await GetLyricByMusixmatchAsync(artistName, trackName);
+        }
+        catch(InvalidOperationException e)
+        {
+            return await GetLyricByMusixmatchAsync(artistName, trackName);
         }
 
-        return $"{re}\r\nhttp://www.chartlyrics.com/api.aspx";
+    }
+
+    private async Task<string> GetLyricByMusixmatchAsync(string artistName, string trackName)
+    {
+        var track = await GetTrackAsync(trackName, artistName);
+
+        var response1 = await $"https://api.musixmatch.com/ws/1.1"
+            .AppendPathSegment("track.lyrics.get")
+            .SetQueryParam("apikey", ApiKey)
+            .SetQueryParam("format", "json")
+            .SetQueryParam("track_id", track.Id)
+            .GetStringAsync();
+
+        return $"{response1.Fetch("message.body.lyrics.lyrics_body")}\r\n只有30%的歌词。\r\nhttps://api.musixmatch.com";
     }
 
     #endregion

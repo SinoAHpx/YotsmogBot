@@ -19,5 +19,6 @@ public class Logger : ILogger
     public void Log(Exception exception)
     {
         AnsiConsole.WriteException(exception, ExceptionFormats.ShortenPaths);
+        AnsiConsole.Markup("[red]YotsmogBot[/]> ");
     }
 }
