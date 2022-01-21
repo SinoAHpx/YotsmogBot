@@ -371,6 +371,20 @@ class Program
             });
 
         #endregion
+
+        #region have been dealt nudget
+
+        _bot.EventReceived
+            .OfType<NudgeEvent>()
+            .Subscribe(async e =>
+            {
+                if (e.Subject.Kind.ToLower() == "group" && e.FromId != _bot.QQ)
+                {
+                    await MessageManager.SendNudgeAsync(e.FromId, e.Subject.Id, MessageReceivers.Group);
+                }
+            });
+
+        #endregion
     }
 
     #endregion

@@ -8,7 +8,7 @@ using Mirai.Net.Data.Messages.Concretes;
 
 namespace YotsmogBot.Modules;
 
-[Description("基于Azure的文本翻译模块")]
+[Description("翻译模块，基于Azure，用法：/trans -text <内容> -to(可选) <语言>")]
 public class TranslatorModule : IModule
 {
     public async void Execute(MessageReceiverBase @base)
