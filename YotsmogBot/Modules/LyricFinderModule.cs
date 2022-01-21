@@ -29,7 +29,7 @@ public class LyricFinderModule : IModule
         catch (Exception e)
         {
             await receiver.SendMessageAsync($"获取失败了! 因为: {e.Message}");   
-            new Logger().Log(e);
+            LoggerManager.Log(e);
         }
     }
 

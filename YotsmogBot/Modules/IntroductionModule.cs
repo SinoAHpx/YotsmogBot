@@ -15,7 +15,7 @@ public class IntroductionModule : IModule
         }
         catch (Exception e)
         {
-            new Logger().Log(e);
+            LoggerManager.Log(e);
         }
     }
 

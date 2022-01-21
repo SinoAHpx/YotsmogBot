@@ -8,8 +8,6 @@ namespace YotsmogBot.Utils;
 
 public class ConfigUtils
 {
-    private static ILogger _logger = new Logger();
-    
     private static FileInfo ConfigFile
     {
         get
@@ -31,7 +29,7 @@ public class ConfigUtils
         }
         catch (Exception e)
         {
-            _logger.Log(e);
+            LoggerManager.Log(e);
             return null;
         }
         
@@ -43,12 +41,12 @@ public class ConfigUtils
         {
             var jsonText = JsonConvert.SerializeObject(config);
 
-            _logger.Log($"[green]Config[/] has been save to [green]{ConfigFile.FullName}[/]");
+            LoggerManager.Log($"[green]Config[/] has been save to [green]{ConfigFile.FullName}[/]");
             await ConfigFile.WriteAllTextAsync(jsonText);
         }
         catch (Exception e)
         {
-            _logger.Log(e);
+            LoggerManager.Log(e);
         }
     }
 
@@ -60,11 +58,11 @@ public class ConfigUtils
             if (config!.ApiKeys.Any(s => s.Name == name))
                 return config.ApiKeys.First(s => s.Name == name).Key;
             
-            _logger.Log($"[red]No ApiKey[/] found with name [green]{name}[/]");
+            LoggerManager.Log($"[red]No ApiKey[/] found with name [green]{name}[/]");
         }
         catch (Exception e)
         {
-            _logger.Log(e);
+            LoggerManager.Log(e);
         }
 
         return null;
@@ -77,7 +75,7 @@ public class ConfigUtils
             var config = await GetConfigAsync();
             if (config!.ApiKeys.Any(s => s.Name == name))
             {
-                _logger.Log($"Api key with name [green]{name}[/] already exists");
+                LoggerManager.Log($"Api key with name [green]{name}[/] already exists");
                 return;
             }
 
@@ -89,11 +87,11 @@ public class ConfigUtils
             
             await SaveConfigAsync(config);
 
-            _logger.Log($"Api key [green]{name}[/] has been added");
+            LoggerManager.Log($"Api key [green]{name}[/] has been added");
         }
         catch (Exception e)
         {
-            _logger.Log(e);
+            LoggerManager.Log(e);
         }
     }
 
@@ -104,12 +102,12 @@ public class ConfigUtils
             var config = await GetConfigAsync();
             if (!config!.ApiKeys.Any())
             {
-                _logger.Log("No api Key found");
+                LoggerManager.Log("No api Key found");
                 return;
             }
             if (config!.ApiKeys.All(s => s.Name != name))
             {
-                _logger.Log($"Api key with name [green]{name}[/] is not exists");
+                LoggerManager.Log($"Api key with name [green]{name}[/] is not exists");
                 return;
             }
 
@@ -117,11 +115,11 @@ public class ConfigUtils
 
             await SaveConfigAsync(config);   
             
-            _logger.Log($"Api key [green]{name}[/] has been removed");
+            LoggerManager.Log($"Api key [green]{name}[/] has been removed");
         }
         catch (Exception e)
         {
-            _logger.Log(e);
+            LoggerManager.Log(e);
         }
     }
 
@@ -137,11 +135,11 @@ public class ConfigUtils
             });
             
             await SaveConfigAsync(config);
-            _logger.Log($"Blacklist {(type ? "group" : "user")} [green]{id}[/] has been added");
+            LoggerManager.Log($"Blacklist {(type ? "group" : "user")} [green]{id}[/] has been added");
         }
         catch (Exception e)
         {
-            _logger.Log(e);
+            LoggerManager.Log(e);
         }
     }
     
@@ -156,14 +154,14 @@ public class ConfigUtils
                 config!.Blacklist.RemoveAll(x => x.Id == id);
 
                 await SaveConfigAsync(config);
-                _logger.Log($"Blacklist [green]{id}[/] has been unblocked");
+                LoggerManager.Log($"Blacklist [green]{id}[/] has been unblocked");
             }
             else
-                _logger.Log("No blacklist found");
+                LoggerManager.Log("No blacklist found");
         }
         catch (Exception e)
         {
-            _logger.Log(e);
+            LoggerManager.Log(e);
         }
     }
 }

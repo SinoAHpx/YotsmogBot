@@ -42,7 +42,7 @@ class Program
             }
             catch (Exception e)
             {
-                new Logger().Log(e);
+                LoggerManager.Log(e);
             }
         }
     }
@@ -242,7 +242,7 @@ class Program
                 }
                 catch (Exception e)
                 {
-                    new Logger().Log(e);
+                    LoggerManager.Log(e);
                 }
             });
 
@@ -275,7 +275,7 @@ class Program
                 }
                 catch (Exception exception)
                 {
-                    new Logger().Log(exception);
+                    LoggerManager.Log(exception);
                 }
             });
 
