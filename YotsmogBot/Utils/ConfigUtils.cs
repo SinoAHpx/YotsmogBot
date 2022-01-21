@@ -56,7 +56,11 @@ public class ConfigUtils
         {
             var config = await GetConfigAsync();
             if (config!.ApiKeys.Any(s => s.Name == name))
-                return config.ApiKeys.First(s => s.Name == name).Key;
+            {
+                var re = config.ApiKeys.First(s => s.Name == name).Key;
+
+                return re;
+            }
             
             LoggerManager.Log($"[red]No ApiKey[/] found with name [green]{name}[/]");
         }

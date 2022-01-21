@@ -12,7 +12,7 @@ namespace YotsmogBot.Modules;
 [Description("歌词模块，获取某首歌的歌名，用法：/lyric -artist <歌手名> -track <歌名>")]
 public class LyricFinderModule : IModule
 {
-    private readonly string? ApiKey = ConfigUtils.GetApiKeyAsync("musixmatch").GetAwaiter().GetResult();
+    private string? ApiKey => ConfigUtils.GetApiKeyAsync("musixmatch").GetAwaiter().GetResult();
     
     public async void Execute(MessageReceiverBase @base)
     {

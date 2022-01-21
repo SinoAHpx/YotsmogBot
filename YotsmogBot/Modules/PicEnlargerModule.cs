@@ -23,10 +23,16 @@ public class PicEnlargerModule : IModule
                 var guid = Guid.NewGuid().ToString("N");
 
                 if (!images.Any())
+                {
                     await receiver.SendMessageAsync("请在命令后跟随图片");
+                    return;
+                }
 
                 if (images.Count > 1)
+                {
                     await receiver.SendMessageAsync("每次只能放大一张图片");
+                    return;
+                }
 
                 var imageBytes = await images.First().Url.GetBytesAsync();
                 var file = new FileInfo($@"{Directory.GetCurrentDirectory()}\PicEnlarger\temp-{guid}.png");
