@@ -19,7 +19,7 @@ namespace YotsmogBot;
 
 class Program
 {
-    private static MiraiBot bot = new MiraiBot();
+    private static MiraiBot _bot = new MiraiBot();
 
     static async Task Main(string[] args)
     {
@@ -59,9 +59,9 @@ class Program
     [Description("Initialize the bot")]
     public static async Task InitializeAsync()
     {
-        bot.Address = ConfigureBot("Address", "localhost:8080");
-        bot.VerifyKey = ConfigureBot("VerifyKey", "1145141919810");
-        bot.QQ = ConfigureBot("QQ", "2672886221");
+        _bot.Address = ConfigureBot("Address", "localhost:8080");
+        _bot.VerifyKey = ConfigureBot("VerifyKey", "1145141919810");
+        _bot.QQ = ConfigureBot("QQ", "2672886221");
 
         if (AnsiConsole.Confirm("Run bot?"))
             await LaunchBotAsync();
@@ -70,7 +70,7 @@ class Program
 
         await ConfigUtils.SaveConfigAsync(new Config()
         {
-            MiraiBot = bot
+            MiraiBot = _bot
         });
     }
 
@@ -82,7 +82,7 @@ class Program
         if (config is null)
             AnsiConsole.MarkupLine("Please [green]/initialize first![/]");
         else
-            bot = config.MiraiBot;
+            _bot = config.MiraiBot;
 
         await LaunchBotAsync();
     }
@@ -198,13 +198,13 @@ class Program
                     switch (name)
                     {
                         case "Address":
-                            bot!.Address = s;
+                            _bot!.Address = s;
                             break;
                         case "QQ":
-                            bot!.QQ = s;
+                            _bot!.QQ = s;
                             break;
                         case "VerifyKey":
-                            bot!.VerifyKey = s;
+                            _bot!.VerifyKey = s;
                             break;
                         default:
                             return ValidationResult.Error($"[red]Invalid {name}![/]");
@@ -222,11 +222,11 @@ class Program
 
     private static async Task LaunchBotAsync()
     {
-        await AnsiConsole.Status().StartAsync("Initializing...", async context => { await bot.LaunchAsync(); });
+        await AnsiConsole.Status().StartAsync("Initializing...", async context => { await _bot.LaunchAsync(); });
 
         //Main message subscription spreading
         var modules = new IntroductionModule().GetModules();
-        bot.MessageReceived
+        _bot.MessageReceived
             .OfType<GroupMessageReceiver>()
             .Subscribe(async r =>
             {
@@ -247,7 +247,7 @@ class Program
             });
 
         //message output
-        bot?.MessageReceived
+        _bot.MessageReceived
             .OfType<GroupMessageReceiver>()
             .Subscribe(r =>
             {
@@ -265,7 +265,7 @@ class Program
             });
 
         //Anti recall
-        bot.EventReceived
+        _bot.EventReceived
             .OfType<GroupMessageRecalledEvent>()
             .Subscribe(async e =>
             {
@@ -280,12 +280,12 @@ class Program
             });
 
         //When someone at bot, bot will send a hello to which one
-        bot.EventReceived
+        _bot.EventReceived
             .OfType<AtEvent>()
             .Subscribe(async e => { await e.Receiver.SendMessageAsync("你好!"); });
 
         //Automatically send welcoming message to new members
-        bot.EventReceived
+        _bot.EventReceived
             .OfType<MemberJoinedEvent>()
             .Subscribe(e =>
             {
@@ -318,6 +318,11 @@ class Program
         }
         
         AnsiConsole.MarkupLine($"Unknown command: [red]{command}[/]! Use [green]/help[/] to see the list of commands.");
+    }
+
+    private static async Task WriteLine(string content)
+    {
+        await Task.Run(() => AnsiConsole.MarkupLine(content));
     }
 
     #endregion
