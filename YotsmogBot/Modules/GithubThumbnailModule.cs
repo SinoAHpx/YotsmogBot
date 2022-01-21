@@ -1,4 +1,5 @@
-﻿using System.Xml;
+﻿using System.ComponentModel;
+using System.Xml;
 using AHpx.Extensions.StringExtensions;
 using Flurl.Http;
 using HtmlAgilityPack;
@@ -6,6 +7,7 @@ using Mirai.Net.Data.Messages.Concretes;
 
 namespace YotsmogBot.Modules;
 
+[Description("Github略缩图模块，在群里收到Github链接时会自动抓取缩略图并发送")]
 public class GithubThumbnailModule : IModule
 {
     public async void Execute(MessageReceiverBase @base)

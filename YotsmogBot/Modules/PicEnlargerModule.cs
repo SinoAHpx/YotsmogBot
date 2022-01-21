@@ -1,10 +1,14 @@
-﻿using System.Diagnostics;
+﻿using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
+using System.Runtime.Versioning;
 using Flurl.Http;
 using Mirai.Net.Data.Messages.Concretes;
 
 namespace YotsmogBot.Modules;
 
+[SupportedOSPlatform("windows")]
+[Description("图片放大模块，此模块仅支持windows平台，用法：/picenlarge <图片>")]
 public class PicEnlargerModule : IModule
 {
     public async void Execute(MessageReceiverBase @base)
@@ -69,6 +73,7 @@ public class PicEnlargerModule : IModule
         catch (Exception e)
         {
             LoggerManager.Log(e);
+            await receiver.SendMessageAsync("失败了! 可能是没有部署realesrgan");
         }
     }
 

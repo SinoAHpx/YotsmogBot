@@ -1,9 +1,11 @@
-﻿using AHpx.Extensions.StringExtensions;
+﻿using System.ComponentModel;
+using AHpx.Extensions.StringExtensions;
 using Mirai.Net.Data.Commands;
 using Mirai.Net.Data.Messages.Concretes;
 
 namespace YotsmogBot.Modules;
 
+[Description("黑名单模块，把某人或者或群加入/移除黑名单，用法: /block(unblock) -user(-group) value")]
 public class BlacklistModule : IModule
 {
     public async void Execute(MessageReceiverBase @base)
