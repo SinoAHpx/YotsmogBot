@@ -9,7 +9,9 @@ using System.Reflection;
 using AHpx.Extensions.StringExtensions;
 using Mirai.Net.Data.Events.Concretes.Group;
 using Mirai.Net.Data.Events.Concretes.Message;
+using Mirai.Net.Data.Events.Concretes.Request;
 using Mirai.Net.Data.Messages.Concretes;
+using Mirai.Net.Data.Shared;
 using Mirai.Net.Sessions;
 using Mirai.Net.Sessions.Http.Managers;
 using YotsmogBot.Data.Config;
@@ -224,75 +226,7 @@ class Program
     {
         await AnsiConsole.Status().StartAsync("Initializing...", async context => { await _bot.LaunchAsync(); });
 
-        //Main message subscription spreading
-        var modules = new IntroductionModule().GetModules();
-        _bot.MessageReceived
-            .OfType<GroupMessageReceiver>()
-            .Subscribe(async r =>
-            {
-                try
-                {                    
-                    var config = await ConfigUtils.GetConfigAsync();
-
-                    if (config.Blacklist.Where(x => x.Type).Select(x => x.Id).Contains(r.Id) ||
-                        config.Blacklist.Where(x => !x.Type).Select(x => x.Id).Contains(r.Sender.Id))
-                        return;
-                    
-                    modules.SubscribeModule(r);
-                }
-                catch (Exception e)
-                {
-                    LoggerManager.Log(e);
-                }
-            });
-
-        //message output
-        _bot.MessageReceived
-            .OfType<GroupMessageReceiver>()
-            .Subscribe(r =>
-            {
-                var promptMessage = r.MessageChain.GetPlainMessage();
-
-                promptMessage = r.MessageChain
-                    .ToList()
-                    .Where(x => x.Type != Messages.Plain && x.Type != Messages.Source)
-                    .Select(x => $"[[{x.Type}]]")
-                    .Aggregate(promptMessage, (s, s1) => s + s1);
-
-                AnsiConsole.MarkupLine(
-                    $"{DateTime.Now:s} [[{r.Name}({r.Id})]] {r.Sender.Name}({r.Sender.Id}) -> {promptMessage}");
-                AnsiConsole.Markup("[red]YotsmogBot[/]> ");
-            });
-
-        //Anti recall
-        _bot.EventReceived
-            .OfType<GroupMessageRecalledEvent>()
-            .Subscribe(async e =>
-            {
-                try
-                {
-                    await e.Group.QuoteGroupMessageAsync(e.MessageId, "不许撤回!");
-                }
-                catch (Exception exception)
-                {
-                    LoggerManager.Log(exception);
-                }
-            });
-
-        //When someone at bot, bot will send a hello to which one
-        _bot.EventReceived
-            .OfType<AtEvent>()
-            .Subscribe(async e => { await e.Receiver.SendMessageAsync("你好!"); });
-
-        //Automatically send welcoming message to new members
-        _bot.EventReceived
-            .OfType<MemberJoinedEvent>()
-            .Subscribe(e =>
-            {
-                e.Member.Group.SendGroupMessageAsync("欢迎"
-                    .Append(new AtMessage(e.Member.Id))
-                    .Append("进群!"));
-            });
+        SpreadSubscription();
     }
 
     private static IEnumerable<MethodInfo> GetCommandHandlers()
@@ -320,9 +254,123 @@ class Program
         AnsiConsole.MarkupLine($"Unknown command: [red]{command}[/]! Use [green]/help[/] to see the list of commands.");
     }
 
-    private static async Task WriteLine(string content)
+    /// <summary>
+    /// Directly spread subscriptions
+    /// </summary>
+    private static void SpreadSubscription()
     {
-        await Task.Run(() => AnsiConsole.MarkupLine(content));
+        #region Main message subscription spreading
+
+        var modules = new IntroductionModule().GetModules();
+        _bot.MessageReceived
+            .OfType<GroupMessageReceiver>()
+            .Subscribe(async r =>
+            {
+                try
+                {                    
+                    var config = await ConfigUtils.GetConfigAsync();
+
+                    if (config.Blacklist.Where(x => x.Type).Select(x => x.Id).Contains(r.Id) ||
+                        config.Blacklist.Where(x => !x.Type).Select(x => x.Id).Contains(r.Sender.Id))
+                        return;
+                    
+                    modules.SubscribeModule(r);
+                }
+                catch (Exception e)
+                {
+                    LoggerManager.Log(e);
+                }
+            });
+
+        #endregion
+
+        #region message output
+
+        _bot.MessageReceived
+            .OfType<GroupMessageReceiver>()
+            .Subscribe(r =>
+            {
+                var promptMessage = r.MessageChain.GetPlainMessage();
+
+                promptMessage = r.MessageChain
+                    .ToList()
+                    .Where(x => x.Type != Messages.Plain && x.Type != Messages.Source)
+                    .Select(x => $"[[{x.Type}]]")
+                    .Aggregate(promptMessage, (s, s1) => s + s1);
+
+                AnsiConsole.MarkupLine(
+                    $"{DateTime.Now:s} [[{r.Name}({r.Id})]] {r.Sender.Name}({r.Sender.Id}) -> {promptMessage}");
+                AnsiConsole.Markup("[red]YotsmogBot[/]> ");
+            });
+
+        #endregion
+
+        #region Anti recall
+        
+        _bot.EventReceived
+            .OfType<GroupMessageRecalledEvent>()
+            .Subscribe(async e =>
+            {
+                try
+                {
+                    await e.Group.QuoteGroupMessageAsync(e.MessageId, "不许撤回!");
+                }
+                catch (Exception exception)
+                {
+                    LoggerManager.Log(exception);
+                }
+            });
+        
+        #endregion
+
+        #region When someone at bot, bot will send a hello to which one
+
+        _bot.EventReceived
+            .OfType<AtEvent>()
+            .Subscribe(async e => { await e.Receiver.SendMessageAsync("你好!"); });
+
+        #endregion
+
+        #region Automatically send welcoming message to new members
+
+        _bot.EventReceived
+            .OfType<MemberJoinedEvent>()
+            .Subscribe(e =>
+            {
+                e.Member.Group.SendGroupMessageAsync("欢迎"
+                    .Append(new AtMessage(e.Member.Id))
+                    .Append("进群!"));
+            });
+
+        #endregion
+
+        #region Auto accept invitations
+
+        _bot.EventReceived
+            .OfType<NewInvitationRequestedEvent>()
+            .Subscribe(async e =>
+            {
+                if (e.FromId == "2672886221")
+                {
+                    await RequestManager.HandleNewInvitationRequestedAsync(e, NewInvitationRequestHandlers.Approve, "");
+                }
+            });
+        
+        #endregion
+
+        #region auto accept friend request
+
+        _bot.EventReceived
+            .OfType<NewFriendRequestedEvent>()
+            .Subscribe(async e =>
+            {
+                if (e.FromId == "2672886221")
+                {
+                    await e.Handle(NewFriendRequestHandlers.Approve);
+                }
+            });
+
+        #endregion
     }
 
     #endregion
