@@ -21,9 +21,6 @@ public class ParrotModule : IModule
             if (!ParrotList.Any())
                 ParrotList.Add(messages);
 
-            if (!ParrotList.Any())
-                ParrotList.Add(messages);
-
             var messageJson = messages.Select(MapMessage);
             var parrotList = ParrotList.Select(x => x.Select(MapMessage));
             
